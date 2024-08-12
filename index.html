@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visualisation BRAA</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #87CEEB; /* Couleur du ciel */
+        }
+        .container {
+            width: 80%;
+            margin: 0 auto;
+            text-align: left; /* Alignement du formulaire sur le côté gauche */
+        }
+        .input-field {
+            margin: 20px;
+        }
+        #visualization {
+            position: relative;
+            width: 100%;
+            height: 400px; /* Hauteur réduite du graphique */
+            border: 1px solid #000;
+            margin-top: 30px;
+            background: linear-gradient(to top, #87CEEB, #4682B4); /* Dégradé du bleu clair en bas au bleu foncé en haut */
+            overflow: hidden;
+        }
+        .plane {
+            position: absolute;
+            width: 40px; /* Taille améliorée */
+            height: 40px; /* Taille améliorée */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            border-radius: 50%; /* Rendre les avions circulaires pour plus d'impact */
+        }
+        #myPlane {
+            background-color: blue;
+            transform: rotate(45deg); /* Apparence de l'avion */
+        }
+        #enemyPlane {
+            background-color: red;
+            transform: rotate(45deg); /* Apparence de l'avion */
+        }
+        #angleDisplay {
+            position: absolute;
+            background-color: white;
+            padding: 2px 5px;
+            border: 1px solid black;
+            font-size: 14px;
+            transform: translate(-50%, -50%);
+        }
+        .ground {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 10px;
+            background-color: #8B4513; /* Couleur du sol */
+            border-top: 1px solid #000;
+        }
+        .legend {
+            font-size: 16px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        .legend span {
+            margin-right: 20px;
+            display: inline-block;
+        }
+        .legend .myLegend {
+            color: blue;
+        }
+        .legend .enemyLegend {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Visualisation BRAA</h1>
+        <div class="input-field">
+            <label for="myAltitude">Mon altitude (en pieds) :</label>
+            <input type="number" id="myAltitude" min="0">
+        </div>
+        <div class="input-field">
+            <label for="enemyDistance">Distance de l'ennemi (en NM) :</label>
+            <input type="number" id="enemyDistance" min="0" max="30">
+        </div>
+        <div class="input-field">
+            <label for="enemyAltitude">Altitude de l'ennemi (en pieds) :</label>
+            <input type="number" id="enemyAltitude" min="0">
+        </div>
+        <button onclick="visualizeBRAA()">Visualiser</button>
+
+        <div class="legend">
+            <span class="myLegend">Mon avion</span>
+            <span class="enemyLegend">Avion ennemi</span>
+        </div>
+
+        <div id="visualization">
+            <div id="myPlane" class="plane"></div>
+            <div id="enemyPlane" class="plane"></div>
+            <div id="angleDisplay"></div>
+            <div class="ground"></div>
+        </div>
+    </div>
+
+    <script>
+        function visualizeBRAA() {
+            const myAltitude = parseInt(document.getElementById('myAltitude').value);
+            const enemyDistance = parseFloat(document.getElementById('enemyDistance').value);
+            const enemyAltitude = parseInt(document.getElementById('enemyAltitude').value);
+
+            const feetPerNM = 6076; // 1 NM = 6076 pieds
+
+            const myPlane = document.getElementById('myPlane');
+            const enemyPlane = document.getElementById('enemyPlane');
+            const angleDisplay = document.getElementById('angleDisplay');
+
+            const visualization = document.getElementById('visualization');
+            const vizWidth = visualization.clientWidth;
+            const vizHeight = visualization.clientHeight;
+
+            const scale = vizWidth / (30 * feetPerNM); // Échelle commune pour 30 NM
+
+            // Calcul des positions en pixels
+            const myPositionY = myAltitude * scale;
+            const enemyPositionY = enemyAltitude * scale;
+
+            const myPositionX = 0.05 * vizWidth; // Position fixe de l'avion bleu
+            const enemyPositionX = myPositionX + (enemyDistance * feetPerNM * scale);
+
+            // Positionner l'avion "ami"
+            myPlane.style.bottom = myPositionY + 'px';
+            myPlane.style.left = myPositionX + 'px';
+
+            // Positionner l'avion "ennemi"
+            enemyPlane.style.bottom = enemyPositionY + 'px';
+            enemyPlane.style.left = enemyPositionX + 'px';
+
+            // Afficher l'angle arrondi à l'unité la plus proche
+            const dx = enemyPositionX - myPositionX;
+            const dy = enemyPositionY - myPositionY;
+            const angle = Math.atan2(dy, dx) * (180 / Math.PI);
+
+            const roundedAngle = Math.round(angle);
+            angleDisplay.innerText = `${roundedAngle}°`;
+            angleDisplay.style.bottom = (myPositionY + enemyPositionY) / 2 + 'px';
+            angleDisplay.style.left = (myPositionX + enemyPositionX) / 2 + 'px';
+        }
+    </script>
+</body>
+</html>
